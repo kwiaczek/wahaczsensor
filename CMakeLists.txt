@@ -25,22 +25,28 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(wahaczsensor wahaczsensor.c )
+file(GLOB VL53L5CX_SOURCES "${CMAKE_SOURCE_DIR}/ext/Platform/*.cpp" "${CMAKE_SOURCE_DIR}/ext/VL53L5CX_ULD_API/src/*.cpp")
+
+add_executable(wahaczsensor wahaczsensor.c ${VL53L5CX_SOURCES})
 
 pico_set_program_name(wahaczsensor "wahaczsensor")
 pico_set_program_version(wahaczsensor "0.1")
 
-pico_enable_stdio_uart(wahaczsensor 1)
-pico_enable_stdio_usb(wahaczsensor 0)
+pico_enable_stdio_uart(wahaczsensor 0)
+pico_enable_stdio_usb(wahaczsensor 1)
 
 # Add the standard library to the build
 target_link_libraries(wahaczsensor
-        pico_stdlib)
+        pico_stdlib
+        hardware_i2c
+)
 
 # Add the standard include files to the build
 target_include_directories(wahaczsensor PRIVATE
   ${CMAKE_CURRENT_LIST_DIR}
   ${CMAKE_CURRENT_LIST_DIR}/.. # for our common lwipopts or any other standard includes, if required
+  ${CMAKE_SOURCE_DIR}/ext/Platform
+  ${CMAKE_SOURCE_DIR}/ext/VL53L5CX_ULD_API/inc
 )
 
 pico_add_extra_outputs(wahaczsensor)
