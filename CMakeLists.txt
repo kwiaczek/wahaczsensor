@@ -27,7 +27,9 @@ pico_sdk_init()
 
 file(GLOB VL53L5CX_SOURCES "${CMAKE_SOURCE_DIR}/ext/Platform/*.cpp" "${CMAKE_SOURCE_DIR}/ext/VL53L5CX_ULD_API/src/*.cpp")
 
-add_executable(wahaczsensor wahaczsensor.c ${VL53L5CX_SOURCES})
+add_executable(wahaczsensor  ${VL53L5CX_SOURCES}
+wahaczsensor.cpp
+)
 
 pico_set_program_name(wahaczsensor "wahaczsensor")
 pico_set_program_version(wahaczsensor "0.1")
@@ -50,4 +52,3 @@ target_include_directories(wahaczsensor PRIVATE
 )
 
 pico_add_extra_outputs(wahaczsensor)
-
