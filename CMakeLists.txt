@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "/home/kacperw/Code/pico-sdk")
+set(PICO_SDK_PATH "/home/wiaczek/Code/pico-sdk")
 
 set(PICO_BOARD pico CACHE STRING "Board type")
 
@@ -26,9 +26,10 @@ pico_sdk_init()
 # Add executable. Default name is the project name, version 0.1
 
 file(GLOB VL53L5CX_SOURCES "${CMAKE_SOURCE_DIR}/ext/Platform/*.cpp" "${CMAKE_SOURCE_DIR}/ext/VL53L5CX_ULD_API/src/*.cpp")
+file(GLOB SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
 add_executable(wahaczsensor  ${VL53L5CX_SOURCES}
-wahaczsensor.cpp
+  ${SOURCE_FILES}
 )
 
 pico_set_program_name(wahaczsensor "wahaczsensor")
@@ -40,6 +41,7 @@ pico_enable_stdio_usb(wahaczsensor 1)
 # Add the standard library to the build
 target_link_libraries(wahaczsensor
         pico_stdlib
+        pico_multicore
         hardware_i2c
 )
 

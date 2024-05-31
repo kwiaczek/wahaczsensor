@@ -24,9 +24,9 @@ uint8_t RdByte(
 		(uint8_t)(RegisterAdress >> 8 & 0xff), 
 		(uint8_t)(RegisterAdress & 0xff)
 	};
-	i2c_write_blocking(p_platform->i2c, p_platform->address, buff, 2, true);
+	i2c_write_blocking(p_platform->i2c.get(), p_platform->address, buff, 2, true);
 
-	return (i2c_read_blocking(p_platform->i2c, p_platform->address, p_value, 1, false) == PICO_ERROR_GENERIC) ? 255 : 0;
+	return (i2c_read_blocking(p_platform->i2c.get(), p_platform->address, p_value, 1, false) == PICO_ERROR_GENERIC) ? 255 : 0;
 }
 
 uint8_t WrByte(
@@ -39,7 +39,7 @@ uint8_t WrByte(
 		(uint8_t)(RegisterAdress & 0xff),
 		(uint8_t)value
 	};
-	return (i2c_write_blocking(p_platform->i2c, p_platform->address, buff, 3, false) == PICO_ERROR_GENERIC) ? 255 : 0;
+	return (i2c_write_blocking(p_platform->i2c.get(), p_platform->address, buff, 3, false) == PICO_ERROR_GENERIC) ? 255 : 0;
 }
 
 uint8_t WrMulti(
@@ -52,7 +52,7 @@ uint8_t WrMulti(
 		(uint8_t)(RegisterAdress >> 8 & 0xff), 
 		(uint8_t)(RegisterAdress & 0xff)
 	};
-	i2c_write_blocking(p_platform->i2c, p_platform->address, buff, 2, true);
+	i2c_write_blocking(p_platform->i2c.get(), p_platform->address, buff, 2, true);
 
 
 	// send without Start conditions between chunks
@@ -97,15 +97,15 @@ uint8_t WrMulti(
         // was set in i2c_init.
         do {
             tight_loop_contents();
-        } while (!((p_platform->i2c)->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_TX_EMPTY_BITS));
+        } while (!((p_platform->i2c.get())->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_TX_EMPTY_BITS));
 
         // If there was a timeout, don't attempt to do anything else.
-        bool abort_reason = (p_platform->i2c)->hw->tx_abrt_source;
+        bool abort_reason = (p_platform->i2c.get())->hw->tx_abrt_source;
         if (abort_reason) {
             // Note clearing the abort flag also clears the reason, and
             // this instance of flag is clear-on-read! Note also the
             // IC_CLR_TX_ABRT register always reads as 0.
-            (p_platform->i2c)->hw->clr_tx_abrt;
+            (p_platform->i2c.get())->hw->clr_tx_abrt;
             abort = true;
         }
 
@@ -118,7 +118,7 @@ uint8_t WrMulti(
 			// to take care of the abort.
 			do {
 				tight_loop_contents();
-			} while (!((p_platform->i2c)->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_STOP_DET_BITS));
+			} while (!((p_platform->i2c.get())->hw->raw_intr_stat & I2C_IC_RAW_INTR_STAT_STOP_DET_BITS));
         }
 
         // Note the hardware issues a STOP automatically on an abort condition.
@@ -145,9 +145,9 @@ uint8_t RdMulti(
 		(uint8_t)(RegisterAdress >> 8 & 0xff), 
 		(uint8_t)(RegisterAdress & 0xff)
 	};
-	i2c_write_blocking(p_platform->i2c, p_platform->address, buff, 2, true);
+	i2c_write_blocking(p_platform->i2c.get(), p_platform->address, buff, 2, true);
 
-	return (i2c_read_blocking(p_platform->i2c, p_platform->address, p_values, size, false) == PICO_ERROR_GENERIC) ? 255 : 0;
+	return (i2c_read_blocking(p_platform->i2c.get(), p_platform->address, p_values, size, false) == PICO_ERROR_GENERIC) ? 255 : 0;
 }
 
 uint8_t Reset_Sensor(

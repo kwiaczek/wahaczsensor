@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <memory>
+#include "pico/stdlib.h"
 #include "hardware/i2c.h"
 
 /**
@@ -34,7 +36,7 @@ typedef struct
 	/* Example for most standard platform : I2C address of sensor */
     uint16_t  			address;
 
-	i2c_inst_t* i2c;
+	std::shared_ptr<i2c_inst_t> i2c = nullptr;
 
 } VL53L5CX_Platform;
 
