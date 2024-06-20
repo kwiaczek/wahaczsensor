@@ -110,10 +110,10 @@ int main(void) {
     int16_t x = leftSensor->getLatestDistance();
     int16_t y = rightSensor->getLatestDistance();
 
-    i2c_slave_data[0] = x >> 8;
-    i2c_slave_data[1] = x & 0xF;
-    i2c_slave_data[2] = y >> 8;
-    i2c_slave_data[3] = y & 0xF;
+    i2c_slave_data.memory[0] = x >> 8;
+    i2c_slave_data.memory[1] = x & 0xF;
+    i2c_slave_data.memory[2] = y >> 8;
+    i2c_slave_data.memory[3] = y & 0xF;
 
 
     //std::memcpy(tx, &x, 2);
