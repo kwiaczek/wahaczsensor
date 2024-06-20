@@ -30,8 +30,8 @@ void poll() {
 
 static struct{
     uint8_t address;
-    uint8_t[0xFF + 1] memory;
-    bool adress_set;
+    uint8_t memory[0xFF + 1];
+    bool address_set;
 } slave_i2c_data;
 
 static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event) {
