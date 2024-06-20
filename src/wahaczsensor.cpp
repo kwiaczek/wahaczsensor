@@ -24,7 +24,7 @@ void poll() {
   while (true) {
     leftSensor->pollForData();
     rightSensor->pollForData();
-    sleep_ms(1000);
+    sleep_ms(2000);
   }
 }
 
@@ -51,8 +51,8 @@ static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event) {
         slave_i2c_data.memory[slave_i2c_data.address] = i2c_read_byte_raw(i2c);
       }
     break;
-  case I2C_SLAVE_REQUEST: 
         i2c_write_byte_raw(i2c, slave_i2c_data.memory[slave_i2c_data.address++]);
+  case I2C_SLAVE_REQUEST: 
     break;
   case I2C_SLAVE_FINISH:
         slave_i2c_data.address_set = false;
@@ -90,9 +90,8 @@ int main(void) {
 
   //leftSensor->setAddress(0x16);
 
-
-  leftSensor->initialize();
   rightSensor->initialize();
+
   //if (!(leftSensor->initialize() && rightSensor->initialize())) {
   //  return -1;
   //}
@@ -111,11 +110,10 @@ int main(void) {
     int16_t y = rightSensor->getLatestDistance();
 
     slave_i2c_data.memory[0] = x >> 8;
-    slave_i2c_data.memory[1] = x & 0xF;
+    slave_i2c_data.memory[1] = x & 0xFF;
     slave_i2c_data.memory[2] = y >> 8;
-    slave_i2c_data.memory[3] = y & 0xF;
-
-
+    slave_i2c_data.memory[3] = y & 0xFF;
+    sleep_ms(100);
     //std::memcpy(tx, &x, 2);
     //std::memcpy(tx+2, &y, 2);
 
