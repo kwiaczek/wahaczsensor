@@ -28,13 +28,39 @@ void poll() {
   }
 }
 
-uint8_t tx[4];
+static struct{
+    uint8_t address;
+    uint8_t[0xFF + 1] memory;
+    bool adress_set;
+} slave_i2c_data;
 
 static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event) {
-  if (event == I2C_SLAVE_REQUEST)
+  /*if (event == I2C_SLAVE_REQUEST)
   {
     printf("REQUEST FULLFIELED! CALLBACK FROM HELL!\n %d %d \n", (I2C_SLAVE_REQUEST == event), event);
 	  i2c_write_raw_blocking(i2c, tx, 4);
+  }*/
+  switch (event)
+  {
+  case I2C_SLAVE_RECEIVE:
+    if (!slave_i2c_data.address_set) {
+        slave_i2c_data.address = i2c_read_byte_raw(i2c);
+        slave_i2c_data.address_set = true;
+      }
+    else {
+        slave_i2c_data.memory[slave_i2c_data.address] = i2c_read_byte_raw(i2c);
+      }
+    break;
+  case I2C_SLAVE_REQUEST: 
+        i2c_write_byte_raw(i2c, slave_i2c_data.memory[slave_i2c_data.address++]);
+    break;
+  case I2C_SLAVE_FINISH:
+        slave_i2c_data.address_set = false;
+        slave_i2c_data.address = 0;
+        break;
+  default:
+    printf("Unrecognised request: %d\n", event);
+    break;
   }
 }
 
@@ -81,13 +107,13 @@ int main(void) {
            rightSensor->getLatestDistance());
     */
     
-    auto x = leftSensor->getLatestDistance();
-    auto y = rightSensor->getLatestDistance();
+    int16_t x = leftSensor->getLatestDistance();
+    int16_t y = rightSensor->getLatestDistance();
 
-    tx[0] = 1;
-    tx[1] = 2;
-    tx[2] = 3;
-    tx[3] = 4;
+    i2c_slave_data[0] = x >> 8;
+    i2c_slave_data[1] = x & 0xF;
+    i2c_slave_data[2] = y >> 8;
+    i2c_slave_data[3] = y & 0xF;
 
 
     //std::memcpy(tx, &x, 2);
