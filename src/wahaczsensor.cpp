@@ -24,7 +24,7 @@ void poll() {
   while (true) {
     leftSensor->pollForData();
     rightSensor->pollForData();
-    sleep_ms(2000);
+    sleep_ms((slave_i2c_data.memory[5] > 0) ? slave_i2c_data.memory[4] : 100);
   }
 }
 
@@ -113,9 +113,7 @@ int main(void) {
     slave_i2c_data.memory[1] = x & 0xFF;
     slave_i2c_data.memory[2] = y >> 8;
     slave_i2c_data.memory[3] = y & 0xFF;
-    sleep_ms(100);
-    //std::memcpy(tx, &x, 2);
-    //std::memcpy(tx+2, &y, 2);
+    sleep_ms((slave_i2c_data.memory[4] > 0) ? slave_i2c_data.memory[4] : 100);
 
   }
 }
