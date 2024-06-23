@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "/home/wiaczek/Code/pico-sdk")
+set(PICO_SDK_PATH "/home/kacperw/Code/pico-sdk")
 
 set(PICO_BOARD pico CACHE STRING "Board type")
 
@@ -42,6 +42,7 @@ pico_enable_stdio_usb(wahaczsensor 1)
 target_link_libraries(wahaczsensor
         pico_stdlib
         pico_multicore
+        pico_i2c_slave
         hardware_i2c
 )
 
