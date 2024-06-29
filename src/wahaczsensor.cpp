@@ -20,6 +20,13 @@
 std::shared_ptr<Sensorvl53l5cx> leftSensor;
 std::shared_ptr<Sensorvl53l5cx> rightSensor;
 
+static struct
+{
+    uint8_t address;
+    uint8_t memory[0xFF + 1];
+    bool address_set;
+} slave_i2c_data;
+
 void poll()
 {
     while (true)
@@ -29,13 +36,6 @@ void poll()
         sleep_ms((slave_i2c_data.memory[5] > 0) ? slave_i2c_data.memory[4] : 100);
     }
 }
-
-static struct
-{
-    uint8_t address;
-    uint8_t memory[0xFF + 1];
-    bool address_set;
-} slave_i2c_data;
 
 static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event)
 {

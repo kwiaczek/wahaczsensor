@@ -7,7 +7,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "/home/wiaczek/Code/pico-sdk")
+if(NOT DEFINED PICO_SDK_PATH)
+    message(FATAL_ERROR "PICO_SDK_PATH variable is required. Please specify the path to the Pico SDK using -DPICO_SDK_PATH=<path>")
+endif()
+
+if(NOT DEFINED RP2040_DIR)
+    message(FATAL_ERROR "RP2040_DIR variable is required. Please specify the path to the Pico SDK using -DRP2040_DIR=<path>")
+endif()
 
 set(PICO_BOARD pico CACHE STRING "Board type")
 
@@ -64,4 +70,12 @@ if(CLANG_FORMAT_BIN)
       COMMAND ${CLANG_FORMAT_BIN} -i ${ALL_SOURCE_FILES}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
+endif()
+
+if(RP2040_DIR)
+  add_custom_target(
+    copyrp2040
+    COMMAND cp ${CMAKE_SOURCE_DIR}/build/wahaczsensor.uf2 ${RP2040_DIR}
+    DEPENDS wahaczsensor
+  ) 
 endif()
