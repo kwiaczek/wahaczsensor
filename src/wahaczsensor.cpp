@@ -70,6 +70,13 @@ int main(void)
     leftSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn);
     rightSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn2);
 
+
+    if (leftSensor->setAddress((uint8_t)((0x32 >> 1) & 0xFF)))
+    {
+        printf("URRRA!!!!");
+
+    }
+
     if (!(leftSensor->initialize() && rightSensor->initialize()))
     {
         return -1;
