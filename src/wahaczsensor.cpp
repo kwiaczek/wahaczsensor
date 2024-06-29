@@ -68,21 +68,24 @@ int main(void)
     puts("SwingArm Sensors have started....\n");
 
     leftSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn);
+    uint8_t leftSensorAddress = (uint8_t)((0x32 >> 1) & 0xff);
     rightSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn2);
 
-
-    if (leftSensor->setAddress((uint8_t)((0x32 >> 1) & 0xFF)))
+    if (!leftSensor->setAddress(leftSensorAddress))
     {
-        printf("URRRA!!!!");
-
+        printf("could not change address. signing offf xdd...\n");
+        sleep_ms(1000);
+        return -1;
     }
 
     if (!(leftSensor->initialize() && rightSensor->initialize()))
     {
+        printf("initalize failed. signing offf xdd...\n");
+        sleep_ms(1000);
         return -1;
     }
 
-    printf("successfully initialized!");
+    printf("successfully initialized!\n");
 
     createSampleCollectInterrupt();
 
