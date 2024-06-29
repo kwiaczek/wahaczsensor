@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 # Initialise pico_sdk from installed location
 # (note this can come from environment, CMake cache etc)
-set(PICO_SDK_PATH "/home/kacperw/Code/pico-sdk")
+set(PICO_SDK_PATH "/home/wiaczek/Code/pico-sdk")
 
 set(PICO_BOARD pico CACHE STRING "Board type")
 
@@ -55,3 +55,13 @@ target_include_directories(wahaczsensor PRIVATE
 )
 
 pico_add_extra_outputs(wahaczsensor)
+
+find_program(CLANG_FORMAT_BIN clang-format)
+if(CLANG_FORMAT_BIN)
+  file(GLOB_RECURSE ALL_SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/src/*.hpp")
+  add_custom_target(
+      format
+      COMMAND ${CLANG_FORMAT_BIN} -i ${ALL_SOURCE_FILES}
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  )
+endif()
