@@ -1,4 +1,5 @@
 #pragma once
+#include "RPController.hpp"
 #include "hardware/i2c.h"
 #include "pico/stdlib.h"
 #include "vl53l5cx_api.h"

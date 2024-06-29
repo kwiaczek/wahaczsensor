@@ -412,7 +412,7 @@ uint8_t vl53l5cx_set_i2c_address(
 	uint8_t status = VL53L5CX_STATUS_OK;
 
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x00);
-	status |= WrByte(&(p_dev->platform), 0x4, (uint8_t)(i2c_address >> 1));
+	status |= WrByte(&(p_dev->platform), 0x4, i2c_address);
 	p_dev->platform.address = i2c_address;
 	status |= WrByte(&(p_dev->platform), 0x7fff, 0x02);
 

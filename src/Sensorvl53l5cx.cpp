@@ -42,14 +42,8 @@ bool Sensorvl53l5cx::setAddress(uint8_t newAddress)
 
     gpio_put(lpn_pin, 1);
     status = vl53l5cx_set_i2c_address(&config, newAddress);
-    config.platform.address = (uint8_t)((newAddress >> 1) & 0xFF);
 
     bool success = status == VL53L5CX_STATUS_OK;
-
-    if (!success)
-    {
-        printf("setAddress has failed on %d sensor!\n", lpn_pin);
-    }
     return success;
 }
 
