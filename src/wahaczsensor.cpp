@@ -4,8 +4,11 @@
 #include <unistd.h>
 #include <vl53l5cx_api.h>
 
+#include "RPController.hpp"
 #include "Sensorvl53l5cx.hpp"
 #include "hardware/i2c.h"
+#include "hardware/irq.h"
+#include "hardware/timer.h"
 #include "pico/i2c_slave.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
@@ -16,58 +19,32 @@
 #define PIN_LPn2 3
 #define SI2C_SDA 14
 #define SI2C_SCL 15
+#define ALARM_NUM 0
+#define ALARM_IRQ TIMER_IRQ_0
 
-std::shared_ptr<Sensorvl53l5cx> leftSensor;
-std::shared_ptr<Sensorvl53l5cx> rightSensor;
+static std::shared_ptr<Sensorvl53l5cx> leftSensor;
+static std::shared_ptr<Sensorvl53l5cx> rightSensor;
 
-static struct
+static void createSampleCollectInterrupt();
+
+static void handleSampleCollectInterrupt()
 {
-    uint8_t address;
-    uint8_t memory[0xFF + 1];
-    bool address_set;
-} slave_i2c_data;
+    hw_clear_bits(&timer_hw->intr, 1u << ALARM_NUM);
+    leftSensor->pollForData();
+    rightSensor->pollForData();
 
-void poll()
-{
-    while (true)
-    {
-        leftSensor->pollForData();
-        rightSensor->pollForData();
-        sleep_ms((slave_i2c_data.memory[5] > 0) ? slave_i2c_data.memory[4] : 100);
-    }
+    RPController::parseMeassuements(leftSensor->getLatestDistance(), rightSensor->getLatestDistance());
+
+    createSampleCollectInterrupt();
 }
 
-static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event)
+void createSampleCollectInterrupt()
 {
-    /*if (event == I2C_SLAVE_REQUEST)
-    {
-      printf("REQUEST FULLFIELED! CALLBACK FROM HELL!\n %d %d \n", (I2C_SLAVE_REQUEST == event), event);
-        i2c_write_raw_blocking(i2c, tx, 4);
-    }*/
-    switch (event)
-    {
-    case I2C_SLAVE_RECEIVE:
-        if (!slave_i2c_data.address_set)
-        {
-            slave_i2c_data.address = i2c_read_byte_raw(i2c);
-            slave_i2c_data.address_set = true;
-        }
-        else
-        {
-            slave_i2c_data.memory[slave_i2c_data.address] = i2c_read_byte_raw(i2c);
-        }
-        break;
-        i2c_write_byte_raw(i2c, slave_i2c_data.memory[slave_i2c_data.address++]);
-    case I2C_SLAVE_REQUEST:
-        break;
-    case I2C_SLAVE_FINISH:
-        slave_i2c_data.address_set = false;
-        slave_i2c_data.address = 0;
-        break;
-    default:
-        printf("Unrecognised request: %d\n", event);
-        break;
-    }
+    hw_set_bits(&timer_hw->inte, 1u << ALARM_NUM);
+    irq_set_exclusive_handler(ALARM_IRQ, handleSampleCollectInterrupt);
+    irq_set_enabled(ALARM_IRQ, true);
+    uint64_t target = timer_hw->timerawl + 1000000;
+    timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
 }
 
 int main(void)
@@ -85,7 +62,7 @@ int main(void)
     i2c_init(i2c1, 100000);
     gpio_set_function(SI2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(SI2C_SCL, GPIO_FUNC_I2C);
-    i2c_slave_init(i2c1, 0x21, &i2cHandler);
+    i2c_slave_init(i2c1, 0x21, &RPController::i2cHandler);
 
     sleep_ms(3000);
     puts("SwingArm Sensors have started....\n");
@@ -93,32 +70,16 @@ int main(void)
     leftSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn);
     rightSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn2);
 
-    // leftSensor->setAddress(0x16);
-
-    rightSensor->initialize();
-
-    // if (!(leftSensor->initialize() && rightSensor->initialize())) {
-    //   return -1;
-    // }
+    if (!(leftSensor->initialize() && rightSensor->initialize()))
+    {
+        return -1;
+    }
 
     printf("successfully initialized!");
 
-    multicore_launch_core1(poll);
+    createSampleCollectInterrupt();
 
     while (true)
     {
-        /*
-        printf("%d --- %d\n", leftSensor->getLatestDistance(),
-               rightSensor->getLatestDistance());
-        */
-
-        int16_t x = leftSensor->getLatestDistance();
-        int16_t y = rightSensor->getLatestDistance();
-
-        slave_i2c_data.memory[0] = x >> 8;
-        slave_i2c_data.memory[1] = x & 0xFF;
-        slave_i2c_data.memory[2] = y >> 8;
-        slave_i2c_data.memory[3] = y & 0xFF;
-        sleep_ms((slave_i2c_data.memory[4] > 0) ? slave_i2c_data.memory[4] : 100);
     }
 }

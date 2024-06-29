@@ -34,6 +34,7 @@ pico_sdk_init()
 file(GLOB VL53L5CX_SOURCES "${CMAKE_SOURCE_DIR}/ext/Platform/*.cpp" "${CMAKE_SOURCE_DIR}/ext/VL53L5CX_ULD_API/src/*.cpp")
 file(GLOB SOURCE_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
+message(${SOURCE_FILES})
 add_executable(wahaczsensor  ${VL53L5CX_SOURCES}
   ${SOURCE_FILES}
 )
