@@ -43,7 +43,7 @@ void createSampleCollectInterrupt()
     hw_set_bits(&timer_hw->inte, 1u << ALARM_NUM);
     irq_set_exclusive_handler(ALARM_IRQ, handleSampleCollectInterrupt);
     irq_set_enabled(ALARM_IRQ, true);
-    uint64_t target = timer_hw->timerawl + 1000000;
+    uint64_t target = timer_hw->timerawl + RPController::currentSamplePollTime()*1000;
     timer_hw->alarm[ALARM_NUM] = (uint32_t)target;
 }
 
@@ -71,6 +71,8 @@ int main(void)
     uint8_t leftSensorAddress = (uint8_t)((0x32 >> 1) & 0xff);
     rightSensor = std::make_shared<Sensorvl53l5cx>(vl53l5cx_i2c, PIN_LPn2);
 
+    RPController::setSamplePollTime(100);
+
     if (!leftSensor->setAddress(leftSensorAddress))
     {
         printf("could not change address. signing offf xdd...\n");
@@ -87,7 +89,8 @@ int main(void)
 
     printf("successfully initialized!\n");
 
-    createSampleCollectInterrupt();
+    multicore_launch_core1(createSampleCollectInterrupt);
+
 
     while (true)
     {
