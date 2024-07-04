@@ -12,7 +12,6 @@ struct SlaveI2cData
 
 class RPController
 {
-    static uint8_t sampleTime;
 
   public:
     static void i2cHandler(i2c_inst_t *i2c, i2c_slave_event_t event);
